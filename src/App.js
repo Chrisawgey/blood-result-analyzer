@@ -1,6 +1,8 @@
 // src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { ToastContainer} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Home from './components/Home';
 import Upload from './components/Upload';
 import Analysis from './components/Analysis';
@@ -20,6 +22,7 @@ function App() {
           <Route path="/upload" element={<Upload />} />
           <Route path="/analysis" element={<Analysis />} />
         </Routes>
+        <ToastContainer />
       </div>
     </Router>
   );
