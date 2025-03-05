@@ -22,19 +22,58 @@ function Upload() {
     }
   };
 
-  // Start the camera
+  // Improved startCamera method
   const startCamera = () => {
+    // Check if getUserMedia is supported
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      toast.error('Camera access not supported in this browser', { style: { color: 'black' } });
+      console.error('getUserMedia is not supported in this browser');
+      return;
+    }
+
+    // Request camera access with more specific constraints
     navigator.mediaDevices
-      .getUserMedia({ video: true })
+      .getUserMedia({ 
+        video: { 
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: 'environment' // Prefer back camera on mobile devices
+        } 
+      })
       .then((stream) => {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          setShowCameraModal(true); // Show the camera modal
+          
+          // Add event listeners to handle video loading
+          videoRef.current.onloadedmetadata = () => {
+            videoRef.current.play()
+              .then(() => {
+                console.log('Video playback started successfully');
+                setShowCameraModal(true);
+              })
+              .catch(err => {
+                console.error('Error playing video:', err);
+                toast.error('Error starting camera', { style: { color: 'black' } });
+              });
+          };
+
+          // Log stream details for debugging
+          console.log('Camera stream started:', stream);
+          const videoTracks = stream.getVideoTracks();
+          console.log('Video tracks:', videoTracks);
         }
       })
       .catch((err) => {
-        console.error('Error accessing camera:', err);
-        toast.error('Error accessing camera: ' + err.message, { style: { color: 'black' } });
+        console.error('Detailed camera access error:', err);
+        
+        // Provide more specific error messaging
+        if (err.name === 'NotAllowedError') {
+          toast.error('Camera access was denied. Please check your browser permissions.', { style: { color: 'black' } });
+        } else if (err.name === 'NotFoundError') {
+          toast.error('No camera found on this device.', { style: { color: 'black' } });
+        } else {
+          toast.error(`Camera error: ${err.message}`, { style: { color: 'black' } });
+        }
       });
   };
 
